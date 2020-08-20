@@ -1,6 +1,10 @@
 const enviroment = require('./server/secret/env');
+const cors = require('cors');
 const express = require('express');
 const app = express();
+
+// call from localhost
+app.use(cors());
 
 // Serve public folder
 app.use(express.static(__dirname + '/public'));
