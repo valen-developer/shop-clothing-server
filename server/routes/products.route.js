@@ -30,7 +30,9 @@ app.get("/api/products", async (req, resp) => {
       [type, queries.price]
     );
   } else {
+    console.log("Entra por tipo");
     data = await selectProduct("type", type);
+    console.log(data);
   }
 
   resp.json({
@@ -42,6 +44,7 @@ app.get("/api/products", async (req, resp) => {
 
 app.post("/api/products", async (req, resp) => {
   const body = req.body;
+  console.log(body);
 
   const newProduct = {
     name: body.name,
@@ -57,9 +60,12 @@ app.post("/api/products", async (req, resp) => {
   };
 
   try {
-    const file = req.files.file;
-    file.mv(`public/uploads/${newProduct.name}.${newProduct.type}.jpg`);
+    // const file = req.files.file;
+    // if (!file) {
+    //   file.mv(`public/uploads/${newProduct.name}.${newProduct.type}.jpg`);
+    // }
   } catch (e) {
+    console.log(e);
     return resp.status(500).json({
       ok: false,
       err: {
@@ -79,6 +85,7 @@ app.post("/api/products", async (req, resp) => {
     });
   }
 
+  console.log(data.e);
   return resp.json({
     ok: false,
     error: data.e,

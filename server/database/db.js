@@ -13,12 +13,13 @@ let getAll = async () => {
   if (conn) {
     try {
       const data = await conn.query(`SELECT * FROM product`);
+      conn.end;
       return { ok: true, data };
     } catch (e) {
+      conn.end;
       return { ok: false, e };
     }
   }
-  conn.end;
 };
 
 let selectProduct = async (colum, query) => {
@@ -28,12 +29,14 @@ let selectProduct = async (colum, query) => {
       const data = await conn.query(
         `SELECT * FROM product WHERE ${colum}='${query}'`
       );
+      conn.end;
       return { ok: true, data };
     } catch (e) {
+      console.log(e);
+      conn.end;
       return { ok: false, e };
     }
   }
-  conn.end;
 };
 
 let selectProductPriceMax = async ([typeColum, priceColum], [type, price]) => {
@@ -72,5 +75,5 @@ module.exports = {
   selectProduct,
   selectProductPriceMax,
   postProduct,
-  getAll
+  getAll,
 };
