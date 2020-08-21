@@ -6,6 +6,8 @@ const pool = mariadb.createPool({
   password: dbData.password,
   user: dbData.user,
   database: dbData.database,
+  acquireTimeout: 20,
+  connectTimeout: 0,
 });
 
 let getAll = async () => {
@@ -13,10 +15,10 @@ let getAll = async () => {
   if (conn) {
     try {
       const data = await conn.query(`SELECT * FROM product`);
-      conn.end;
+      conn.release();
       return { ok: true, data };
     } catch (e) {
-      conn.end;
+      conn.release();
       return { ok: false, e };
     }
   }
@@ -29,11 +31,11 @@ let selectProduct = async (colum, query) => {
       const data = await conn.query(
         `SELECT * FROM product WHERE ${colum}='${query}'`
       );
-      conn.end;
+      conn.release();
       return { ok: true, data };
     } catch (e) {
       console.log(e);
-      conn.end;
+      conn.release();
       return { ok: false, e };
     }
   }
@@ -46,8 +48,10 @@ let selectProductPriceMax = async ([typeColum, priceColum], [type, price]) => {
       const data = await conn.query(
         `SELECT * FROM product WHERE ${typeColum}='${type}' AND ${priceColum}<='${price}'`
       );
+      conn.release();
       return { ok: true, data };
     } catch (e) {
+      conn.release();
       return {
         ok: false,
         e,
@@ -63,12 +67,12 @@ let postProduct = async (product) => {
     const data = await conn.query(
       `INSERT INTO product (name, type, price, ofert_price, stock, quantity, ofert, urlimage, size, size_cm) VALUES ('${product.name}', '${product.type}', '${product.price}', '${product.ofert_price}', '${product.stock}', '${product.quantity}', '${product.ofert}', '${product.urlimage}', '${product.size}', '${product.size_cm}')`
     );
-
+    conn.release();
     return { ok: true, data };
   } catch (e) {
+    conn.release();
     return { ok: false, e };
   }
-  conn.end;
 };
 
 module.exports = {

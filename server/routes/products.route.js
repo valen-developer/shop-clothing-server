@@ -30,9 +30,7 @@ app.get("/api/products", async (req, resp) => {
       [type, queries.price]
     );
   } else {
-    console.log("Entra por tipo");
     data = await selectProduct("type", type);
-    console.log(data);
   }
 
   resp.json({
@@ -51,7 +49,7 @@ app.post("/api/products", async (req, resp) => {
     type: body.type,
     price: body.price,
     ofert_price: body.ofert_price ? body.ofert_price : 0,
-    stock: body.stock,
+    stock: body.stock ? body.stock : true,
     quantity: body.quantity,
     ofert: body.ofert ? body.ofert : false,
     size: body.size,
@@ -60,13 +58,14 @@ app.post("/api/products", async (req, resp) => {
   };
 
   try {
-    // const file = req.files.file;
-    // if (!file) {
-    //   file.mv(`public/uploads/${newProduct.name}.${newProduct.type}.jpg`);
-    // }
+    const file = req.files.file;
+    console.log(file);
+    if (file) {
+      file.mv(`public/uploads/${newProduct.name}.${newProduct.type}.jpg`);
+    }
   } catch (e) {
     console.log(e);
-    return resp.status(500).json({
+    return resp.status(400).json({
       ok: false,
       err: {
         message: "file not upload",
