@@ -88,10 +88,30 @@ let deleteProduct = async (id) => {
   }
 };
 
+let updateProduct = async (product) => {
+  const conn = await pool.getConnection();
+  try {
+    const data = await conn.query(
+      `UPDATE product SET name='${product.name}', ` +
+        `price='${product.price}', ` +
+        `ofert_price='${product.ofert_price}', ` +
+        `stock='${product.stock}', ` +
+        `ofert='${product.ofert}', ` +
+        `size='${product.size}', ` +
+        `size_cm='${product.size_cm}', ` +
+        `urlimage='${product.urlimage}' ` +
+        `WHERE id='${product.id}'`
+    );
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 module.exports = {
   selectProduct,
   selectProductPriceMax,
   postProduct,
   getAll,
   deleteProduct,
+  updateProduct,
 };

@@ -10,6 +10,7 @@ const {
   postProduct,
   getAll,
   deleteProduct,
+  updateProduct,
 } = require("../database/db");
 
 app.get("/api/products/all", async (req, resp) => {
@@ -60,7 +61,6 @@ app.post("/api/products", async (req, resp) => {
 
   try {
     const file = req.files.file;
-    console.log(file);
     if (file) {
       file.mv(`public/uploads/${newProduct.name}.${newProduct.type}.jpg`);
     }
@@ -107,6 +107,44 @@ app.delete("/api/products", async (req, resp) => {
   }
 
   resp.json(data);
+});
+
+app.put("/api/products", async (req, resp) => {
+  const body = req.body;
+  console.log("============= Buscamos file ============");
+  console.log(req.files);
+
+  console.log(body);
+
+  if (req.files) {
+    console.log("Entra en files");
+    const file = req.files.file;
+    file.mv(`public/uploads/${newProduct.name}.${newProduct.type}.jpg`);
+  }
+
+  const product = {
+    id: body.id,
+    name: body.name,
+    type: body.type,
+    price: body.price,
+    ofert_price:
+      body.ofert_price === null || body.ofert_price === undefined
+        ? 0
+        : body.ofert_price,
+    stock: body.stok ? body.stock : true,
+    ofert: body.ofert ? body.ofert : false,
+    size: body.size,
+    size_cm: body.size_cm,
+    urlimage:
+      req.files === null || req.files === undefined
+        ? `uploads/${body.name}.${body.type}.jpg`
+        : body.urlimage,
+  };
+
+  const data = await updateProduct(product);
+  resp.json({
+    data,
+  });
 });
 
 module.exports = app;
