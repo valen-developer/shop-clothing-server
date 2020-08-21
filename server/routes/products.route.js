@@ -9,6 +9,7 @@ const {
   selectProductPriceMax,
   postProduct,
   getAll,
+  deleteProduct,
 } = require("../database/db");
 
 app.get("/api/products/all", async (req, resp) => {
@@ -89,6 +90,23 @@ app.post("/api/products", async (req, resp) => {
     ok: false,
     error: data.e,
   });
+});
+
+app.delete("/api/products", async (req, resp) => {
+  const id = req.query.id;
+
+  console.log(req.query);
+
+  const data = await deleteProduct(id);
+
+  if (data.data.affectedRows === 0) {
+    return resp.json({
+      ok: false,
+      error: "No hay ningun registro con ese id",
+    });
+  }
+
+  resp.json(data);
 });
 
 module.exports = app;

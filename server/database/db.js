@@ -75,9 +75,23 @@ let postProduct = async (product) => {
   }
 };
 
+let deleteProduct = async (id) => {
+  const conn = await pool.getConnection();
+  try {
+    const data = await conn.query(`DELETE FROM product WHERE id='${id}'`);
+    conn.release();
+    return { ok: true, data };
+  } catch (e) {
+    console.log(e);
+    conn.release();
+    return { ok: false, error: e };
+  }
+};
+
 module.exports = {
   selectProduct,
   selectProductPriceMax,
   postProduct,
   getAll,
+  deleteProduct,
 };
