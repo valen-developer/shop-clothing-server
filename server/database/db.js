@@ -102,8 +102,10 @@ let updateProduct = async (product) => {
         `urlimage='${product.urlimage}' ` +
         `WHERE id='${product.id}'`
     );
+    return { ok: true, data };
   } catch (e) {
     console.log(e);
+    return { ok: false, error: e };
   }
 };
 
