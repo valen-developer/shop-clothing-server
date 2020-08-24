@@ -10,6 +10,8 @@ app.use(fileUpload({ useTempFiles: false }));
 
 const { deleteFiles } = require("../utils/utils");
 
+const { getSizesByID } = require("../database/db.sizes");
+
 const {
   saveImages,
   deleteAllById,
@@ -40,9 +42,11 @@ app.get("/api/product", async (req, resp) => {
 
   try {
     const data = await selectProduct("id", id);
+    const sizes = await getSizesByID(id);
     resp.json({
       ok: true,
       data,
+      sizes,
     });
   } catch (e) {
     console.log(e);
