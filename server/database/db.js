@@ -58,16 +58,19 @@ let selectProductPriceMax = async ([typeColum, priceColum], [type, price]) => {
       };
     }
   }
-  conn.end;
 };
 
 let postProduct = async (product) => {
   const conn = await pool.getConnection();
   try {
     const data = await conn.query(
-      `INSERT INTO product (name, type, price, ofert_price, stock, quantity, ofert, urlimage, size, size_cm) VALUES ('${product.name}', '${product.type}', '${product.price}', '${product.ofert_price}', '${product.stock}', '${product.quantity}', '${product.ofert}', '${product.urlimage}', '${product.size}', '${product.size_cm}')`
+      `INSERT INTO product ` +
+        `(name, type, price, ofert_price, stock, ofert, urlimage) ` +
+        `VALUES ('${product.name}', '${product.type}', '${product.price}', '${product.ofert_price}', ` +
+        `'${product.stock}', '${product.ofert}', '${product.urlimage}')`
     );
     conn.release();
+    console.log(data);
     return { ok: true, data };
   } catch (e) {
     conn.release();
@@ -96,9 +99,7 @@ let updateProduct = async (product) => {
         `price='${product.price}', ` +
         `ofert_price='${product.ofert_price}', ` +
         `stock='${product.stock}', ` +
-        `ofert='${product.ofert}', ` +
-        `size='${product.size}', ` +
-        `size_cm='${product.size_cm}', ` +
+        `ofert='${product.ofert}', ` +    
         `urlimage='${product.urlimage}' ` +
         `WHERE id='${product.id}'`
     );

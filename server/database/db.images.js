@@ -22,19 +22,7 @@ let getAllImages = async (productID) => {
   }
 };
 
-let getById = async (id) => {
-  const conn = await pool.getConnection();
-  try {
-    const data = await conn.query(
-      `SELECT * FROM images WHERE product_id='${id}'`
-    );
-    conn.release();
-    return { ok: true, data };
-  } catch (e) {
-    conn.release();
-    return { ok: false, error: e };
-  }
-};
+
 
 let saveImages = async (productName, productId, productType, index) => {
   const conn = await pool.getConnection();
@@ -89,5 +77,5 @@ module.exports = {
   getAllImages,
   deleteAllById,
   countImages,
-  getById,
+  
 };

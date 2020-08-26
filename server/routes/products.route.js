@@ -10,7 +10,11 @@ app.use(fileUpload({ useTempFiles: false }));
 
 const { deleteFiles } = require("../utils/utils");
 
-const { getSizesByID } = require("../database/db.sizes");
+const {
+  getSizesByID,
+  postSizes,
+  deleteSizesById,
+} = require("../database/db.sizes");
 
 const {
   saveImages,
@@ -49,24 +53,11 @@ app.get("/api/product", async (req, resp) => {
       sizes,
     });
   } catch (e) {
-    console.log(e);
     resp.json({
       ok: false,
       error: e,
     });
   }
-});
-
-app.get("/api/images", async (req, resp) => {
-  const id = req.query.id;
-
-  const data = await getById(id);
-  console.log(data);
-
-  resp.json({
-    ok: true,
-    images: data.data,
-  });
 });
 
 app.get("/api/products", async (req, resp) => {
@@ -92,27 +83,29 @@ app.get("/api/products", async (req, resp) => {
 app.post("/api/products", filesUpload, async (req, resp) => {
   const body = req.body;
 
+  // size = [ {size, quantity}, {} ]
   const newProduct = {
     name: body.name,
     type: body.type,
     price: body.price,
     ofert_price: body.ofert_price ? body.ofert_price : 0,
     stock: body.stock ? body.stock : true,
-    quantity: body.quantity,
     ofert: body.ofert ? body.ofert : false,
-    size: body.size,
-    size_cm: body.size_cm,
+    sizes: JSON.parse(body.size),
     urlimage: `uploads/${body.name}flag1.${body.type}.jpg`,
   };
 
   let data;
   try {
     data = await postProduct(newProduct);
-    console.log(data);
-  } catch (e) {
-    console.log(e);
-  }
+  } catch (e) {}
   const productID = data.data.insertId;
+
+  newProduct.sizes.forEach((size) => {
+    postSizes(size.size, size.quantity, productID);
+  });
+
+  // save on images DB
   for (let index = 0; index < body.fileLength; index++) {
     const dataImages = await saveImages(
       newProduct.name,
@@ -133,6 +126,72 @@ app.post("/api/products", filesUpload, async (req, resp) => {
   return resp.json({
     ok: false,
     error: data.e,
+  });
+});
+
+// Update
+app.put("/api/products", filesUpload, async (req, resp) => {
+  const body = req.body;
+
+  // Get path and name file
+  let arrayToList = body.urlimage.split("/");
+  let oldName = arrayToList[arrayToList.length - 1].split("flag")[0];
+  let uploadsPath = path.resolve("public/uploads/");
+
+  const product = {
+    id: body.id,
+    name: body.name,
+    type: body.type,
+    price: body.price,
+    ofert_price:
+      body.ofert_price === null || body.ofert_price === undefined
+        ? 0
+        : body.ofert_price,
+    stock: body.stok ? body.stock : true,
+    ofert: body.ofert ? body.ofert : false,
+    sizes: JSON.parse(body.sizes),
+    urlimage: `uploads/${body.name}flag1.${body.type}.jpg`,
+  };
+
+  const data = await updateProduct(product);
+
+  let countImg;
+  if (!req.files) {
+    const countImageData = await countImages(product.id);
+    countImg = countImageData.data[0]["COUNT(product_id)"];
+  } else {
+    countImg = body.fileLength;
+  }
+
+  console.log(product.sizes);
+
+  //delete sizes and update
+  deleteSizesById(product.id);
+  product.sizes.forEach((size) => {
+    postSizes(size.size, size.quantity, product.id);
+  });
+
+  
+
+  // delete and save on images db
+  deleteAllById(product.id).then(async (data) => {
+    for (let index = 0; index < countImg; index++) {
+      fs.rename(
+        `${uploadsPath}/${oldName}flag${index + 1}.${body.type}.jpg`,
+        `${uploadsPath}/${body.name}flag${index + 1}.${body.type}.jpg`,
+        (err) => {}
+      );
+      const dataImages = await saveImages(
+        product.name,
+        product.id,
+        product.type,
+        index + 1
+      );
+    }
+  });
+
+  resp.json({
+    data,
   });
 });
 
@@ -157,66 +216,6 @@ app.delete("/api/products", async (req, resp) => {
   }
 
   resp.json(data);
-});
-
-// Update
-app.put("/api/products", filesUpload, async (req, resp) => {
-  const body = req.body;
-
-  // Get path and name file
-  let arrayToList = body.urlimage.split("/");
-  let oldName = arrayToList[arrayToList.length - 1].split("flag")[0];
-  let uploadsPath = path.resolve("public/uploads/");
-
-  const product = {
-    id: body.id,
-    name: body.name,
-    type: body.type,
-    price: body.price,
-    ofert_price:
-      body.ofert_price === null || body.ofert_price === undefined
-        ? 0
-        : body.ofert_price,
-    stock: body.stok ? body.stock : true,
-    ofert: body.ofert ? body.ofert : false,
-    size: body.size,
-    size_cm: body.size_cm,
-    urlimage: `uploads/${body.name}flag1.${body.type}.jpg`,
-  };
-
-  const data = await updateProduct(product);
-
-  let countImg;
-  if (!req.files) {
-    const countImageData = await countImages(product.id);
-    countImg = countImageData.data[0]["COUNT(product_id)"];
-  } else {
-    countImg = body.fileLength;
-  }
-
-  // delete and save on images db
-  deleteAllById(product.id).then(async (data) => {
-    console.log(data);
-    for (let index = 0; index < countImg; index++) {
-      fs.rename(
-        `${uploadsPath}/${oldName}flag${index + 1}.${body.type}.jpg`,
-        `${uploadsPath}/${body.name}flag${index + 1}.${body.type}.jpg`,
-        (err) => {
-          console.log(err);
-        }
-      );
-      const dataImages = await saveImages(
-        product.name,
-        product.id,
-        product.type,
-        index + 1
-      );
-    }
-  });
-
-  resp.json({
-    data,
-  });
 });
 
 module.exports = app;

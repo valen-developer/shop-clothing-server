@@ -16,10 +16,37 @@ let getSizesByID = async (id) => {
     const data = await conn.query(
       `SELECT * FROM sizes WHERE product_id='${id}'`
     );
+    conn.release();
     return data;
   } catch (e) {
+    conn.release();
     return { error: e };
   }
 };
 
-module.exports = { getSizesByID };
+let postSizes = async (size, quantity, prodcutID) => {
+  const conn = await pool.getConnection();
+  try {
+    const data = await conn.query(
+      `INSERT INTO sizes (size, product_id, quantity) ` +
+        `VALUES ('${size}', '${prodcutID}', '${quantity}')`
+    );
+    conn.release();
+    return { ok: true, data };
+  } catch (error) {
+    conn.release();
+    return { ok: false, error };
+  }
+};
+
+let deleteSizesById = async (id)=>{
+  const conn = await pool.getConnection();
+  try {
+    const dataSize = await conn.query(`DELETE FROM sizes WHERE product_id='${id}'`);
+    conn.release();
+  } catch (error) {
+    
+  }
+}
+
+module.exports = { getSizesByID, postSizes, deleteSizesById  };
