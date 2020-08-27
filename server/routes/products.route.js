@@ -84,8 +84,6 @@ app.get("/api/products", async (req, resp) => {
 app.post("/api/products", filesUpload, async (req, resp) => {
   const body = req.body;
 
-  console.log(body);
-
   const newProduct = {
     name: body.name,
     type: body.type,
@@ -97,6 +95,7 @@ app.post("/api/products", filesUpload, async (req, resp) => {
     urlimage: `uploads/${body.name}flag1.${body.type}.jpg`,
   };
   let data = await postProduct(newProduct);
+  console.log(data);
 
   const productID = data.data.insertId;
   newProduct.sizes.forEach((size) => {
