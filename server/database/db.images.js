@@ -16,8 +16,10 @@ let getAllImages = async (productID) => {
     const data = await conn.query(
       `SELECT * FROM images WHERE product_id='${productID}'`
     );
+    conn.release();
     return { ok: true, data };
   } catch (e) {
+    conn.release();
     return { ok: false, error: e };
   }
 };

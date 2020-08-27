@@ -99,12 +99,14 @@ let updateProduct = async (product) => {
         `price='${product.price}', ` +
         `ofert_price='${product.ofert_price}', ` +
         `stock='${product.stock}', ` +
-        `ofert='${product.ofert}', ` +    
+        `ofert='${product.ofert}', ` +
         `urlimage='${product.urlimage}' ` +
         `WHERE id='${product.id}'`
     );
+    conn.release();
     return { ok: true, data };
   } catch (e) {
+    conn.release();
     console.log(e);
     return { ok: false, error: e };
   }

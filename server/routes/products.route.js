@@ -31,6 +31,7 @@ const {
   deleteProduct,
   updateProduct,
 } = require("../database/db");
+const { json } = require("body-parser");
 
 app.get("/api/products/all", async (req, resp) => {
   const data = await getAll();
@@ -83,24 +84,21 @@ app.get("/api/products", async (req, resp) => {
 app.post("/api/products", filesUpload, async (req, resp) => {
   const body = req.body;
 
-  // size = [ {size, quantity}, {} ]
+  console.log(body);
+
   const newProduct = {
     name: body.name,
     type: body.type,
     price: body.price,
-    ofert_price: body.ofert_price ? body.ofert_price : 0,
+    ofert_price: body.ofert_price !== null ? body.ofert_price : 0,
     stock: body.stock ? body.stock : true,
-    ofert: body.ofert ? body.ofert : false,
-    sizes: JSON.parse(body.size),
+    ofert: body.ofert !== null ? body.ofert : false,
+    sizes: JSON.parse(body.sizes),
     urlimage: `uploads/${body.name}flag1.${body.type}.jpg`,
   };
+  let data = await postProduct(newProduct);
 
-  let data;
-  try {
-    data = await postProduct(newProduct);
-  } catch (e) {}
   const productID = data.data.insertId;
-
   newProduct.sizes.forEach((size) => {
     postSizes(size.size, size.quantity, productID);
   });
@@ -147,11 +145,13 @@ app.put("/api/products", filesUpload, async (req, resp) => {
       body.ofert_price === null || body.ofert_price === undefined
         ? 0
         : body.ofert_price,
-    stock: body.stok ? body.stock : true,
+    stock: body.stock ? body.stock : true,
     ofert: body.ofert ? body.ofert : false,
     sizes: JSON.parse(body.sizes),
     urlimage: `uploads/${body.name}flag1.${body.type}.jpg`,
   };
+  //delete sizes
+  deleteSizesById(product.id);
 
   const data = await updateProduct(product);
 
@@ -162,16 +162,6 @@ app.put("/api/products", filesUpload, async (req, resp) => {
   } else {
     countImg = body.fileLength;
   }
-
-  console.log(product.sizes);
-
-  //delete sizes and update
-  deleteSizesById(product.id);
-  product.sizes.forEach((size) => {
-    postSizes(size.size, size.quantity, product.id);
-  });
-
-  
 
   // delete and save on images db
   deleteAllById(product.id).then(async (data) => {
@@ -190,6 +180,11 @@ app.put("/api/products", filesUpload, async (req, resp) => {
     }
   });
 
+  // save new sizes
+  product.sizes.forEach((size) => {
+    postSizes(size.size, size.quantity, product.id);
+  });
+
   resp.json({
     data,
   });
@@ -205,10 +200,15 @@ app.delete("/api/products", async (req, resp) => {
   countImagesData = countImagesData.data[0]["COUNT(product_id)"];
   deleteFiles(productName, productType, countImagesData);
 
+  const dataSizes = await deleteSizesById(id);
   const dataImages = await deleteAllById(id);
   const data = await deleteProduct(id);
 
-  if (data.data.affectedRows === 0 && dataImages.data.affectedRows === 0) {
+  if (
+    data.data.affectedRows === 0 &&
+    dataImages.data.affectedRows === 0 &&
+    dataSizes.data.affectedRows === 0
+  ) {
     return resp.json({
       ok: false,
       error: "No hay ningun registro con ese id",

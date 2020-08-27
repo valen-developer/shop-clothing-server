@@ -39,14 +39,20 @@ let postSizes = async (size, quantity, prodcutID) => {
   }
 };
 
-let deleteSizesById = async (id)=>{
+let deleteSizesById = async (id) => {
   const conn = await pool.getConnection();
   try {
-    const dataSize = await conn.query(`DELETE FROM sizes WHERE product_id='${id}'`);
-    conn.release();
-  } catch (error) {
-    
-  }
-}
+    const dataSize = await conn.query(
+      `DELETE FROM sizes WHERE product_id='${id}'`
+    );
 
-module.exports = { getSizesByID, postSizes, deleteSizesById  };
+    conn.release();
+    return { ok: true, dataSize };
+  } catch (error) {
+    conn.release();
+    console.log(e);
+    return { ok: false, error };
+  }
+};
+
+module.exports = { getSizesByID, postSizes, deleteSizesById };
