@@ -5,12 +5,15 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const { createUser, getUserByEmail } = require("../database/db.users");
-const { verifyUserToken, verifyRole } = require('../middlewares/auth.middleware')
+const {
+  verifyUserToken,
+  verifyRole,
+} = require("../middlewares/auth.middleware");
 
 const enviroment = require("../secret/env");
 
 //Create new user
-app.post("/users/register",[verifyUserToken], async (req, resp) => {
+app.post("/users/register", [verifyUserToken], async (req, resp) => {
   // Set body an encrypt password
   const body = req.body;
   body.password = bcrypt.hashSync(body.password, 10);
@@ -46,7 +49,13 @@ app.post("/users/login", async (req, resp) => {
   resp.json({
     ok: true,
     userDB,
-    token
+    token,
+  });
+});
+
+app.get("/users/logged", verifyUserToken, (req, resp) => {
+  resp.json({
+    ok: true,
   });
 });
 

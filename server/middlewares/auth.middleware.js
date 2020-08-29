@@ -13,28 +13,21 @@ let verifyUserToken = (req, resp, next) => {
       });
     }
 
-    
-
     next();
   });
 };
 
+let verifyRole = (req, resp, next) => {
+  const role = req.headers.role;
 
+  if (role === "ADMIN_ROLE") {
+    next();
+  }
 
-let verifyRole = (req, resp, next)=>{
-
-    const role = req.headers.role;
-
-    if(role === 'ADMIN_ROLE'){
-        next();
-    }
-
-    resp.json({
-        ok: false,
-        error: 'Not authorization'
-    });
-
-
-}
+  resp.json({
+    ok: false,
+    error: "Not authorization",
+  });
+};
 
 module.exports = { verifyUserToken, verifyRole };
