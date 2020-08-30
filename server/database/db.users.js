@@ -34,7 +34,7 @@ let getUserByEmail = async (email) => {
   try {
     const data = await conn.query(`SELECT * FROM users WHERE email='${email}'`);
     conn.release();
-    return { ok: false, data };
+    return { ok: true, data };
   } catch (error) {
     conn.release();
     return { ok: false, error };

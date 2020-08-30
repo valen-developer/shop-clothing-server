@@ -5,10 +5,10 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const { createUser, getUserByEmail } = require("../database/db.users");
-const {
-  verifyUserToken,
-  verifyRole,
-} = require("../middlewares/auth.middleware");
+const { verifyUserToken } = require("../middlewares/auth.middleware");
+
+const mailer = require("../secret/mailer.secret");
+const { sendMail } = require("../utils/mailer");
 
 const enviroment = require("../secret/env");
 
@@ -31,7 +31,14 @@ app.post("/users/login", async (req, resp) => {
   const email = body.email;
   const password = body.password;
 
-  const userDB = (await getUserByEmail(email)).data[0];
+  const dataDB = await getUserByEmail(email);
+
+  if (!dataDB.ok)
+    return resp
+      .status(400)
+      .json({ ok: false, error: "Usuario o contraseña incorrectos" });
+
+  const userDB = dataDB.data[0];
 
   if (!bcrypt.compareSync(password, userDB.password)) {
     return resp.status(400).json({
@@ -45,6 +52,17 @@ app.post("/users/login", async (req, resp) => {
   const token = jwt.sign(userDB, enviroment.token.seed, {
     expiresIn: enviroment.token.exp,
   });
+
+  const mensaje = "Un mensaje";
+
+  const mailOption = {
+    from: mailer.email,
+    to: "valenreta@gmail.com",
+    subject: "Un asunto desde la pagina",
+    html: `<h1>${mensaje}</h1> <a href="http://localhost:3000/home">Ir a la web</a>`,
+  };
+
+  sendMail(mailOption);
 
   resp.json({
     ok: true,
