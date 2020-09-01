@@ -13,17 +13,47 @@ const { sendMail } = require("../utils/mailer");
 const enviroment = require("../secret/env");
 
 //Create new user
-app.post("/users/register", [verifyUserToken], async (req, resp) => {
+app.post("/users/register", async (req, resp) => {
   // Set body an encrypt password
   const body = req.body;
   body.password = bcrypt.hashSync(body.password, 10);
 
-  const dataFromDB = await createUser(body);
+  const userData = {
+    email: body.email,
+    password: body.password,
+  };
 
-  resp.json({
-    ok: true,
-    dataFromDB,
+  // generate token
+  const tokenRegister = jwt.sign(userData, enviroment.token.seed, {
+    expiresIn: enviroment.token.exp,
   });
+  const webRedicrect = `http://localhost:3000/checkregister/${tokenRegister}`;
+
+  //Send email with token
+  const mailOptions = {
+    from: mailer.email,
+    to: userData.email,
+    subject: "Registro web",
+    html:
+      `<h1 style="color: red;" >Pulsa en el siguiente enlace para confirmar tu email</h1> ` +
+      `<a href="${webRedicrect}">Confirmar mi email</a>`,
+  };
+  const dataMail = await sendMail(mailOptions);
+
+  resp.json(dataMail);
+});
+
+app.get("/users/checkregister", [verifyUserToken], async (req, resp) => {
+  const decodedPayload = jwt.decode(req.headers.token);
+  const user = {
+    email: decodedPayload.email,
+    password: decodedPayload.password,
+  };
+
+  const dataDB = await createUser(user);
+  if (dataDB.ok) return resp.json({ ok: true, user });
+  else
+    return resp.json({ ok: false, error: "No se ha podido crear el usuario" });
 });
 
 app.post("/users/login", async (req, resp) => {

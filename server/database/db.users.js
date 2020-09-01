@@ -18,7 +18,7 @@ let createUser = async (user) => {
     const data = await conn.query(
       `INSERT INTO users(name, email, password, addr, role) ` +
         `VALUES ('${user.name}','${user.email}', '${user.password}', ` +
-        `'${user.addr}', '${user.role}')`
+        `'${user.addr}', '${user.role ? user.role : "USER_ROLE"}')`
     );
     conn.release();
     return { ok: true, data };

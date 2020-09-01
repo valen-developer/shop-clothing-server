@@ -10,11 +10,11 @@ const transporter = mailer.createTransport({
   },
 });
 
-let sendMail = (mailOptions) => {
-  transporter.sendMail(mailOptions, (err, info) => {
-    if (err) console.log(err);
-    else console.log(info);
-  });
+let sendMail = async (mailOptions) => {
+  let info = await transporter.sendMail(mailOptions);
+
+  if (info.accepted.length >= 1) return { ok: true, info };
+  else return { ok: false, info };
 };
 
 module.exports = { sendMail };
