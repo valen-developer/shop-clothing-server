@@ -9,6 +9,10 @@ app.use(require('./images.route'));
 app.use(require('./users.route'));
 
 
+app.use(require('./buys.route'));
+app.use(require('./payments.route'));
+
+
 
 
 module.exports = app;

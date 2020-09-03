@@ -102,8 +102,11 @@ app.post("/users/login", async (req, resp) => {
 });
 
 app.get("/users/logged", verifyUserToken, (req, resp) => {
+  const user = jwt.decode(req.headers.token);
+
   resp.json({
     ok: true,
+    user,
   });
 });
 
