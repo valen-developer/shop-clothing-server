@@ -5,7 +5,22 @@ const jwt = require("jsonwebtoken");
 
 const enviroment = require("../secret/env");
 
-const { createBuy } = require("../database/db.buy");
+const {
+  createBuy,
+  updatePaypalID,
+  getByBuyToken,
+} = require("../database/db.buy");
+
+app.get("/api/buy", async (req, resp) => {
+  const buyToken = req.query.buyToken;
+
+  const dataDB = await getByBuyToken(buyToken);
+
+  resp.json({
+    ok: true,
+    paypalID: dataDB.paypal_id,
+  });
+});
 
 app.post("/api/buy", async (req, resp) => {
   const body = req.body;
@@ -21,6 +36,18 @@ app.post("/api/buy", async (req, resp) => {
   resp.json({
     ok: true,
     buyToken,
+  });
+});
+
+app.put("/api/buy/paypalID", async (req, resp) => {
+  const buyID = req.body.buyID;
+  const buyToken = req.body.buyToken;
+
+  const dataDB = await updatePaypalID(buyID, buyToken);
+  //TODO: cazar errores
+
+  resp.json({
+    ok: true,
   });
 });
 

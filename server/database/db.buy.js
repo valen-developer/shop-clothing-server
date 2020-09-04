@@ -22,6 +22,35 @@ let getAll = async () => {
   }
 };
 
+let getAllByUserID = async (userID) => {
+  const conn = await pool.getConnection();
+  try {
+    const data = await conn.query(
+      `SELECT * FROM buys WHERE user_id='${userID}'`
+    );
+
+    console.log(data);
+    conn.release();
+  } catch (error) {
+    conn.release();
+    console.log(error);
+  }
+};
+
+let getByBuyToken = async (buyToken) => {
+  const conn = await pool.getConnection();
+  try {
+    const data = await conn.query(
+      `SELECT paypal_id FROM buys WHERE buy_token='${buyToken}'`
+    );
+    conn.release();
+    return data[0];
+  } catch (error) {
+    conn.release();
+    console.log(error);
+  }
+};
+
 let createBuy = async (item, user, buyToken) => {
   const conn = await pool.getConnection();
   try {
@@ -40,22 +69,23 @@ let createBuy = async (item, user, buyToken) => {
   }
 };
 
-let getAllByUserID = async (userID) => {
+let updatePaypalID = async (buyID, buyToken) => {
   const conn = await pool.getConnection();
   try {
     const data = await conn.query(
-      `SELECT * FROM buys WHERE user_id='${userID}'`
+      `UPDATE buys SET paypal_id='${buyID}' WHERE buy_token='${buyToken}'`
     );
-
-    console.log(data);
     conn.release();
   } catch (error) {
-    conn.release();
     console.log(error);
+    conn.release();
   }
 };
 
-
-
-
-module.exports = { createBuy, getAllByUserID, getAll };
+module.exports = {
+  getAll,
+  getByBuyToken,
+  getAllByUserID,
+  createBuy,
+  updatePaypalID,
+};
