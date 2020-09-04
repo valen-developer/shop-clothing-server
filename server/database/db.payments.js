@@ -1,5 +1,6 @@
 const dbData = require("../secret/db.secret");
 const mariadb = require("mariadb");
+const { user } = require("../secret/db.secret");
 
 const pool = mariadb.createPool({
   host: dbData.host,
@@ -9,6 +10,20 @@ const pool = mariadb.createPool({
   acquireTimeout: 20,
   connectTimeout: 0,
 });
+
+let getPaymentByUserID = async (userID) => {
+  const conn = await pool.getConnection();
+  try {
+    const data = await conn.query(
+      `SELECT * FROM payments WHERE user_id='${userID}'`
+    );
+    conn.release();
+    return { ok: true, data };
+  } catch (error) {
+    conn.release();
+    return { ok: false, error };
+  }
+};
 
 let createPayment = async (paymentData) => {
   const conn = await pool.getConnection();
@@ -27,4 +42,4 @@ let createPayment = async (paymentData) => {
   }
 };
 
-module.exports = { createPayment };
+module.exports = { createPayment, getPaymentByUserID };

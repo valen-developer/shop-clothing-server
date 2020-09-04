@@ -31,9 +31,11 @@ let getAllByUserID = async (userID) => {
 
     console.log(data);
     conn.release();
+    return data;
   } catch (error) {
     conn.release();
     console.log(error);
+    return error;
   }
 };
 
@@ -51,14 +53,12 @@ let getByBuyToken = async (buyToken) => {
   }
 };
 
-let createBuy = async (item, user, buyToken) => {
+let createBuy = async (item, user, buyToken, date) => {
   const conn = await pool.getConnection();
   try {
     const data = await conn.query(
       `INSERT INTO buys (date, product_id, user_id, size, quantity, buy_token) ` +
-        `VALUES ('${Date.now()}', '${item.product.id}', '${user.id}', '${
-          item.size
-        }', '${item.quantity}', '${buyToken}')`
+        `VALUES ('${date}', '${item.product.id}', '${user.id}', '${item.size}', '${item.quantity}', '${buyToken}')`
     );
     conn.release();
     return { ok: true, data };
