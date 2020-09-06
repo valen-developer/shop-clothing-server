@@ -25,13 +25,13 @@ let getPaymentByUserID = async (userID) => {
   }
 };
 
-let createPayment = async (paymentData) => {
+let createPayment = async (paymentData, date) => {
   const conn = await pool.getConnection();
   try {
     const dataDB = await conn.query(
-      `INSERT INTO payments (amount, state, user_id, buy_token, paypal_id) ` +
+      `INSERT INTO payments (amount, state, user_id, buy_token, paypal_id, date) ` +
         `VALUES ('${paymentData.paymentAmount}','${paymentData.state}','${paymentData.userID}', ` +
-        `'${paymentData.buyToken}','${paymentData.paypalID}')`
+        `'${paymentData.buyToken}','${paymentData.paypalID}', '${date}')`
     );
     conn.release();
     return { ok: true };

@@ -26,8 +26,8 @@ app.get("/api/payment", async (req, resp) => {
 
 app.post("/api/payment", async (req, resp) => {
   const paymentData = req.body;
-
-  const dataDB = await createPayment(paymentData);
+  const date = Date.now();
+  const dataDB = await createPayment(paymentData, date);
 
   if (dataDB.ok) {
     return resp.json({
