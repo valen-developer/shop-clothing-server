@@ -19,6 +19,8 @@ app.post("/users/register", async (req, resp) => {
   body.password = bcrypt.hashSync(body.password, 10);
 
   const userData = {
+    name: body.name,
+    addr: body.addr,
     email: body.email,
     password: body.password,
   };
@@ -46,6 +48,8 @@ app.post("/users/register", async (req, resp) => {
 app.get("/users/checkregister", [verifyUserToken], async (req, resp) => {
   const decodedPayload = jwt.decode(req.headers.token);
   const user = {
+    name: decodedPayload.name,
+    addr: decodedPayload.addr,
     email: decodedPayload.email,
     password: decodedPayload.password,
   };
